@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prototipo-rn-ingress
+spec:
+  rules:
+    - host: prototipo-rn-testreactnative-dev.empcbr.thoughtworks-labs.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prototipo-rn
+                port: 
+                  number: 80
+  tls:
+  - hosts:
+    - prototipo-rn-testreactnative-dev.empcbr.thoughtworks-labs.net
+    secretName: letencryptkey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prototipo-rn
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: prototipo-rn
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prototipo-rn
+  labels:
+    app: prototipo-rn
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 5
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: prototipo-rn
+  template:
+    metadata:
+      labels:
+        app: prototipo-rn
+    spec:
+      containers:
+      - name: prototipo-rn
+        image: 626109959667.dkr.ecr.us-east-1.amazonaws.com/prototipo-rn:{image-tag}
+        ports:
+        - containerPort: 80
